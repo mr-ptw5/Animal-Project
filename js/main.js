@@ -45,45 +45,22 @@ function getFetch(){
         // credentials: 'same-origin', // include, *same-origin, omit
         headers: {
           'Content-Type': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
         },
-        // redirect: 'follow', // manual, *follow, error
-        // referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         body: JSON.stringify(data) // body data type must match "Content-Type" header
       })
         .then(res => res.json()) // parse response as JSON
         .then(data => {
             console.log(data)
-            data.results = data.results.sort(sortByClade)
-            let list = document.querySelector('ul')
-
-            while (list.firstChild) {
-                list.removeChild(list.firstChild)
-            }
-            // const names = [...new Set(data.results.map(creature => creature.primaryCommonName))]
-            const creatures = data.results.map(creature => {
-                let species = creature.scientificName.split(' ').slice(1).join(' ')
-                return {
-                    name: creature.primaryCommonName,
-                    phylum: creature.speciesGlobal.phylum,
-                    class: creature.speciesGlobal.taxclass,
-                    order: creature.speciesGlobal.taxorder,
-                    family: creature.speciesGlobal.family,
-                    genus: creature.speciesGlobal.genus,
-                    species: species
-                }
-            })
+            
+            const creatures = tidyCreatureData(data.results)
+            creatures.sort(sortByClade)
+            emptyBirdList()
+            fillBirdList(creatures)
             console.log(`${data.results.length} results, ${creatures.length} after being whittled down`)
-            console.log(data.results)
+            console.log(creatures)
 
 
-            creatures.forEach(creature => {
-                let elem = document.createElement('li')
-                let span = document.createElement('span')
-                span.textContent = `${creature.name} ...... ${creature.order} ${creature.family} ${creature.genus} ${creature.species}`
-                elem.appendChild(span)
-                list.appendChild(elem)
-            })
+            
         //   document.querySelector('img').src = data.message
         })
         .catch(err => {
@@ -92,12 +69,41 @@ function getFetch(){
 }
 
 function sortByClade(a, b) {
-    const hierarchy = ['phylum', 'class', 'order', 'family', 'genus']
-    a = a.speciesGlobal
-    b = b.speciesGlobal
-    for (clade of hierarchy) {
-        if (a[clade] !== b[clade])
-            return a[clade].localeCompare(b[clade])
-    }
-    return 0
+    const hierarchy = ['phylum', 'class', 'order', 'family', 'genus', 'species']
+    a = `${a.phylum} ${a.class} ${a.order} ${a.family} ${a.genus} ${a.species}`
+    b = `${b.phylum} ${b.class} ${b.order} ${b.family} ${b.genus} ${b.species}`
+    return a.localeCompare(b)
+}
+
+function tidyCreatureData(data) {
+    const creatures = data.map(creature => {
+        return {
+            name: creature.primaryCommonName,
+            phylum: creature.speciesGlobal.phylum,
+            class: creature.speciesGlobal.taxclass,
+            order: creature.speciesGlobal.taxorder,
+            family: creature.speciesGlobal.family,
+            genus: creature.speciesGlobal.genus,
+            species: creature.scientificName.split(' ').slice(1).join(' ')
+        }
+    })
+    return creatures
+}
+
+function emptyBirdList() {
+    const list = document.querySelector('ul')
+            while (list.firstChild) {
+                list.removeChild(list.firstChild)
+            }
+}
+
+function fillBirdList(creatures) {
+    const list = document.querySelector('ul')
+    creatures.forEach(creature => {
+        let elem = document.createElement('li')
+        let span = document.createElement('span')
+        span.textContent = `${creature.name} ...... ${creature.order} ${creature.family} ${creature.genus} ${creature.species}`
+        elem.appendChild(span)
+        list.appendChild(elem)
+    })
 }
