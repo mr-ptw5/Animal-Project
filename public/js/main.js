@@ -25,6 +25,23 @@ let data = {
 
 document.querySelector('img').addEventListener('click', getFetch)
 
+function callData() {
+    fetch('/api/birddata', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+      })
+        .then(res => res.json()) // parse response as JSON
+        .then(data => {
+            console.log(data)
+        })
+        .catch(err => {
+            console.log(`error ${err}`)
+        });
+}
+
 function getFetch(){
     const url = 'https://explorer.natureserve.org/api/data/speciesSearch'
     const location = document.querySelector('input').value
