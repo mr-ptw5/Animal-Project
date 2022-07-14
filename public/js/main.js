@@ -23,19 +23,23 @@ let data = {
   }
   
 
-document.querySelector('img').addEventListener('click', getFetch)
+document.querySelector('img').addEventListener('click', callData)
 
 function callData() {
-    fetch('/api/birddata', {
+    let url = '/api/birddata'
+    const paramsObj = {state: 'TX'}
+    const searchParams = new URLSearchParams(paramsObj)
+    // fetch(`${url}&${searchParams.toString()}`, {
+        fetch(`/api/birddata`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data) // body data type must match "Content-Type" header
+        }
+        // body: JSON.stringify(data) // body data type must match "Content-Type" header
       })
-        .then(res => res.json()) // parse response as JSON
+        .then(res => res.json() )// res.json()) // parse response as JSON
         .then(data => {
-            console.log(data)
+            console.log(data, "long")
         })
         .catch(err => {
             console.log(`error ${err}`)
@@ -43,7 +47,6 @@ function callData() {
 }
 
 function getFetch(){
-    const url = 'https://explorer.natureserve.org/api/data/speciesSearch'
     const location = document.querySelector('input').value
     if (location)
         data.locationCriteria = [{
@@ -53,10 +56,9 @@ function getFetch(){
           }]
     else
         delete data.locationCriteria
-    console.log(data)
   
-    fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    fetch('/api/birddata', {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
         // mode: 'cors', // no-cors, *cors, same-origin
         // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         // credentials: 'same-origin', // include, *same-origin, omit
@@ -68,9 +70,6 @@ function getFetch(){
         .then(res => res.json()) // parse response as JSON
         .then(data => {
             console.log(data)
-            
-            const creatures = tidyCreatureData(data.results)
-            creatures.sort(sortByClade)
             emptyBirdList()
             fillBirdList(creatures)
             console.log(`${data.results.length} results, ${creatures.length} after being whittled down`)
@@ -83,28 +82,6 @@ function getFetch(){
         .catch(err => {
             console.log(`error ${err}`)
         });
-}
-
-function sortByClade(a, b) {
-    const hierarchy = ['phylum', 'class', 'order', 'family', 'genus', 'species']
-    a = `${a.phylum} ${a.class} ${a.order} ${a.family} ${a.genus} ${a.species}`
-    b = `${b.phylum} ${b.class} ${b.order} ${b.family} ${b.genus} ${b.species}`
-    return a.localeCompare(b)
-}
-
-function tidyCreatureData(data) {
-    const creatures = data.map(creature => {
-        return {
-            name: creature.primaryCommonName,
-            phylum: creature.speciesGlobal.phylum,
-            class: creature.speciesGlobal.taxclass,
-            order: creature.speciesGlobal.taxorder,
-            family: creature.speciesGlobal.family,
-            genus: creature.speciesGlobal.genus,
-            species: creature.scientificName.split(' ').slice(1).join(' ')
-        }
-    })
-    return creatures
 }
 
 function emptyBirdList() {
