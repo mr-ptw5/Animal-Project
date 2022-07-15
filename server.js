@@ -1,9 +1,11 @@
 const { response } = require('express')
+const querystring = require('querystring')
 const express = require('express')
 const app = express()
 const PORT = 8000
 
 app.use(express.static('public'))
+app.use(express.json())
 
 app.get('/', (request, response) => {
     response.sendFile(__dirname + '/index.html')
@@ -14,9 +16,8 @@ app.get('/loginput', (req, res) => {
 })
 
 app.get('/api/birddata', (req, res) => {
-    console.log('ok gonna fetch bird data')
-    let result = getBirdData({})
-    .then(data => res.json(data))
+    let result = getBirdData(req.query)
+        .then(data => res.json(data))
 })
 
 
@@ -26,52 +27,61 @@ app.listen(process.env.PORT || PORT, () => {
 })
 
 
-function getBirdData (input) {
+function getBirdData(input) {
 
     //format input data
-
-    //fetch the POST request and return the data
-    
     let data = {
-        "criteriaType" : "species",
-        "textCriteria" : [ ],
-        "statusCriteria" : [ ],
-        "pagingOptions" : {
-          "page" : null,
-          "recordsPerPage" : 2000
+        "criteriaType": "species",
+        "textCriteria": [],
+        "statusCriteria": [],
+        "pagingOptions": {
+            "page": null,
+            "recordsPerPage": 2000
         },
-        "recordSubtypeCriteria" : [ ],
-        "modifiedSince" : null,
-        "locationOptions" : null,
-        "classificationOptions" : null,
-        "speciesTaxonomyCriteria" : [
-             {
-        "paramType" : "scientificTaxonomy",
-        "level" : "class",
-        "scientificTaxonomy" : "aves",
-        "kingdom" : "animalia"
-              }
-          ]
-      }
-      console.log('gonna fetch')
-    
-      const url = 'https://explorer.natureserve.org/api/data/speciesSearch'
-      return fetch(url, {
+        "recordSubtypeCriteria": [],
+        "modifiedSince": null,
+        "locationOptions": null,
+        "classificationOptions": null,
+        "speciesTaxonomyCriteria": [
+            {
+                "paramType": "scientificTaxonomy",
+                "level": "class",
+                "scientificTaxonomy": "aves",
+                "kingdom": "animalia"
+            }
+        ]
+    }
+
+    if (input.state) {
+        data.locationCriteria = [{
+            "paramType": "subnation",
+            "subnation": input.state,
+            "nation": "US"
+        }]
+    }
+    //fetch the POST request and return the data
+
+
+    const url = 'https://explorer.natureserve.org/api/data/speciesSearch'
+    return fetch(url, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
         // mode: 'cors', // no-cors, *cors, same-origin
         // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
         // credentials: 'same-origin', // include, *same-origin, omit
         headers: {
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data) // body data type must match "Content-Type" header
-      })
+    })
         .then(res => res.json()) // parse response as JSON
         .then(data => {
             const creatures = tidyCreatureData(data.results)
             creatures.sort(sortByClade)
-            console.log('creatures exists', creatures.length)
-            return creatures
+            console.log(`${creatures.length} creatures found in ${input.state}`)
+            return {
+                list: creatures,
+                location: input.state || 'America'
+            }
         })
         .catch(err => {
             console.log(`error ${err}`)
