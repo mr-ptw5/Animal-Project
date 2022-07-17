@@ -1,3 +1,8 @@
 li {
     margin: 15px auto;
 }
+
+form input:nth-of-type(1) {
+    width: 35%;
+    height: 150px;
+}

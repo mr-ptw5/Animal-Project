@@ -1,5 +1,4 @@
 const { response } = require('express')
-const querystring = require('querystring')
 const express = require('express')
 const app = express()
 const PORT = 8000
@@ -18,6 +17,11 @@ app.get('/loginput', (req, res) => {
 app.get('/api/birddata', (req, res) => {
     let result = getBirdData(req.query)
         .then(data => res.json(data))
+})
+
+app.post('/api/addNote', (req, res) => {
+    console.log('adding note')
+    res.send('ok')
 })
 
 
