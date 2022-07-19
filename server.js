@@ -1,7 +1,22 @@
 const { response } = require('express')
 const express = require('express')
+const MongoClient = require('mongodb').MongoClient
 const app = express()
+require('dotenv').config()
 const PORT = 8000
+const connectionStr = `mongodb+srv://wetterdewbb:${process.env.MONGODB_PW}@cluster0.y7idt.mongodb.net/?retryWrites=true&w=majority`
+
+let db,
+dbName = 'bird-data'
+
+MongoClient.connect(connectionStr)
+.then(client => {
+    db = client.db(dbName)
+    console.log('connected to the database')
+})
+.catch (err => {
+    console.log(`problem: ${err}`)
+})
 
 app.use(express.static('public'))
 app.use(express.json())
@@ -20,8 +35,8 @@ app.get('/api/birddata', (req, res) => {
 })
 
 app.post('/api/addNote', (req, res) => {
-    console.log('adding note')
-    res.send('ok')
+    console.log(`adding note: ${req.body.note}`)
+    res.json({note: req.body.note})
 })
 
 

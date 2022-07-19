@@ -1,10 +1,11 @@
+const url = '/api'
 document.querySelector('img').addEventListener('click', callData)
+document.querySelector('section input + button').addEventListener('click', sendNote)
 
 function callData() {
-    let url = '/api/birddata'
     const queryParams = getQueryParametersString()
 
-    fetch(url + queryParams, {
+    fetch(url + '/birdData' + queryParams, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -55,4 +56,22 @@ function populateBirdList(creatures) {
         elem.appendChild(span)
         list.appendChild(elem)
     })
+}
+
+function sendNote () {
+    const note = document.querySelector('section input').value
+    fetch(url + '/addNote', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({note: note})
+    })
+        .then(res => res.json())// res.json()) // parse response as JSON
+        .then(response => {
+            console.log(response)
+                })
+        .catch(err => {
+            console.log(`error ${err}`)
+        });
 }
