@@ -2,27 +2,37 @@ const { response } = require('express')
 const express = require('express')
 const MongoClient = require('mongodb').MongoClient
 const app = express()
+app.set('view-engine', 'ejs')
 require('dotenv').config()
 const PORT = 8000
-const connectionStr = `mongodb+srv://wetterdewbb:${process.env.MONGODB_PW}@cluster0.y7idt.mongodb.net/?retryWrites=true&w=majority`
+const connectionStr = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PW}@cluster0.y7idt.mongodb.net/?retryWrites=true&w=majority`
 
 let db,
+birdCollection,
 dbName = 'bird-data'
 
 MongoClient.connect(connectionStr)
 .then(client => {
     db = client.db(dbName)
+    birdCollection = db.collection('bird-data')
     console.log('connected to the database')
 })
 .catch (err => {
     console.log(`problem: ${err}`)
 })
-
 app.use(express.static('public'))
 app.use(express.json())
 
-app.get('/', (request, response) => {
-    response.sendFile(__dirname + '/index.html')
+
+
+app.get('/', (req, res) => {
+    getBirdData(req.query)
+    .then(data => {
+        const creatures = tidyCreatureData(data)
+        creatures.sort(sortByClade)
+        res.render('index.ejs', {birds: creatures})
+    })
+    .catch(err => console.log(err))
 })
 
 app.get('/loginput', (req, res) => {
@@ -30,13 +40,26 @@ app.get('/loginput', (req, res) => {
 })
 
 app.get('/api/birddata', (req, res) => {
-    let result = getBirdData(req.query)
-        .then(data => res.json(data))
+    getBirdData(req.query)
+    .then(data => {
+        const creatures = tidyCreatureData(data)
+        creatures.sort(sortByClade)
+        res.render('index.ejs', {birds: creatures})
+    })
+    .catch(err => console.log(err))
 })
 
 app.post('/api/addNote', (req, res) => {
     console.log(`adding note: ${req.body.note}`)
-    res.json({note: req.body.note})
+    birdCollection.insert([req.body, {note: 'first'}, {note: 'second'}, {note: 'ok now'}])
+    .then(result => res.json({redirect: '/'}))
+    .catch(err => console.log(err))
+})
+
+app.delete('/api/clearItems', (req, res) => {
+    birdCollection.deleteMany({})
+    .then(result => res.send({redirect: '/'}))
+    .catch(err => console.log(err))
 })
 
 
@@ -46,7 +69,11 @@ app.listen(process.env.PORT || PORT, () => {
 })
 
 
-function getBirdData(input) {
+function getBirdData() {
+    return birdCollection.find().toArray()
+}
+
+function getBirdDataFromNatureServe(input) {
 
     //format input data
     let data = {
@@ -78,7 +105,6 @@ function getBirdData(input) {
             "nation": "US"
         }]
     }
-    //fetch the POST request and return the data
 
 
     const url = 'https://explorer.natureserve.org/api/data/speciesSearch'
@@ -93,14 +119,10 @@ function getBirdData(input) {
         body: JSON.stringify(data) // body data type must match "Content-Type" header
     })
         .then(res => res.json()) // parse response as JSON
+        .then(data => data.results)
         .then(data => {
-            const creatures = tidyCreatureData(data.results)
-            creatures.sort(sortByClade)
-            console.log(`${creatures.length} creatures found in ${input.state}`)
-            return {
-                list: creatures,
-                location: input.state || 'America'
-            }
+            birdCollection.insertMany(data)
+            return data
         })
         .catch(err => {
             console.log(`error ${err}`)
@@ -110,7 +132,7 @@ function getBirdData(input) {
 
 function tidyCreatureData(data) {
     const creatures = data.map(creature => {
-        return {
+        const classification = {
             name: creature.primaryCommonName,
             phylum: creature.speciesGlobal.phylum,
             class: creature.speciesGlobal.taxclass,
@@ -119,14 +141,18 @@ function tidyCreatureData(data) {
             genus: creature.speciesGlobal.genus,
             species: creature.scientificName.split(' ').slice(1).join(' ')
         }
+        return {
+            phylumAndClass: `${classification.phylum} ${classification.class}`,
+            usefulName: `${classification.order} ${classification.family} ${classification.genus} ${classification.species}`,
+            commonName: classification.name
+        }
     })
     return creatures
 }
 
 function sortByClade(a, b) {
-    // const hierarchy = ['phylum', 'class', 'order', 'family', 'genus', 'species']
-    a = `${a.phylum} ${a.class} ${a.order} ${a.family} ${a.genus} ${a.species}`
-    b = `${b.phylum} ${b.class} ${b.order} ${b.family} ${b.genus} ${b.species}`
+    a = `${a.phylumAndClass} ${a.usefulName}`
+    b = `${b.phylumAndClass} ${b.usefulName}`
     return a.localeCompare(b)
 }
 

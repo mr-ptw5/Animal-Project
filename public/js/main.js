@@ -1,21 +1,22 @@
 const url = '/api'
 document.querySelector('img').addEventListener('click', callData)
-document.querySelector('section input + button').addEventListener('click', sendNote)
+// document.querySelector('section input + button').addEventListener('click', sendNote)
+// document.querySelector('ul + button').addEventListener('click', clearItems)
 
 function callData() {
     const queryParams = getQueryParametersString()
-
     fetch(url + '/birdData' + queryParams, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
         }
     })
-        .then(res => res.json())// res.json()) // parse response as JSON
+        .then(res => res.json())
         .then(data => {
-            emptyBirdList()
-            populateBirdList(data.list)
-            updateMessage(data)
+            console.log(data)
+            // emptyBirdList()
+            // populateBirdList(data.list)
+            // updateMessage(data)
                 })
         .catch(err => {
             console.log(`error ${err}`)
@@ -31,7 +32,7 @@ function getQueryParametersString() {
         paramsObj.state = locationElem.value
     }
     const searchParams = new URLSearchParams(paramsObj)
-    return searchParams ? `?${searchParams}` : ''
+    return searchParams.length ? `?${searchParams}` : ''
 }
 
 function updateMessage (data) {
@@ -67,11 +68,27 @@ function sendNote () {
         },
         body: JSON.stringify({note: note})
     })
-        .then(res => res.json())// res.json()) // parse response as JSON
-        .then(response => {
-            console.log(response)
+        // .then(res => res.json())// res.json()) // parse response as JSON
+        .then(response => response.json())
+        .then(res => {
+            console.log(res)
+            window.location = res.redirect
                 })
         .catch(err => {
             console.log(`error ${err}`)
         });
+}
+
+function clearItems () {
+    fetch(url + '/clearItems', {
+        method: 'DELETE',
+    })
+    .then(res => {
+        console.log(res.redirect)
+        return res.json()
+    })
+    .then(res => {
+        window.location = res.redirect
+    })
+    .catch(err => console.log(err))
 }
