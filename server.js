@@ -69,64 +69,18 @@ app.listen(process.env.PORT || PORT, () => {
 })
 
 
-function getBirdData() {
-    return birdCollection.find().toArray()
-}
-
-function getBirdDataFromNatureServe(input) {
-
-    //format input data
-    let data = {
-        "criteriaType": "species",
-        "textCriteria": [],
-        "statusCriteria": [],
-        "pagingOptions": {
-            "page": null,
-            "recordsPerPage": 2000
-        },
-        "recordSubtypeCriteria": [],
-        "modifiedSince": null,
-        "locationOptions": null,
-        "classificationOptions": null,
-        "speciesTaxonomyCriteria": [
-            {
-                "paramType": "scientificTaxonomy",
-                "level": "class",
-                "scientificTaxonomy": "aves",
-                "kingdom": "animalia"
-            }
-        ]
+function getBirdData(code) {
+    // return birdCollection.find({}).toArray()
+    const locationParameter = code.state ? {
+        "nations.subnations.subnationCode": code.state
     }
-
-    if (input.state) {
-        data.locationCriteria = [{
-            "paramType": "subnation",
-            "subnation": input.state,
-            "nation": "US"
-        }]
-    }
-
-
-    const url = 'https://explorer.natureserve.org/api/data/speciesSearch'
-    return fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        // mode: 'cors', // no-cors, *cors, same-origin
-        // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        // credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data) // body data type must match "Content-Type" header
-    })
-        .then(res => res.json()) // parse response as JSON
-        .then(data => data.results)
-        .then(data => {
-            birdCollection.insertMany(data)
-            return data
-        })
-        .catch(err => {
-            console.log(`error ${err}`)
-        });
+    : {}
+    console.log("gonna get from mongodb now")
+    const ham = {"nations.subnations.subnationCode": "ME"}
+    let vr = "HI"
+    // console.log(code.state, "NE")
+    return birdCollection.find({'nations.subnations.subnationCode': vr}).toArray()
+    // return birdCollection.find(locationParameter).toArray()
 }
 
 

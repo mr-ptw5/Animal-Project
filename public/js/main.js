@@ -13,7 +13,7 @@ function callData() {
     })
         .then(res => res.json())
         .then(data => {
-            console.log(data)
+            // console.log(data)
             // emptyBirdList()
             // populateBirdList(data.list)
             // updateMessage(data)
@@ -31,8 +31,8 @@ function getQueryParametersString() {
     if (locationElem.value) {
         paramsObj.state = locationElem.value
     }
-    const searchParams = new URLSearchParams(paramsObj)
-    return searchParams.length ? `?${searchParams}` : ''
+    const searchParams = new URLSearchParams(paramsObj).toString()
+    return searchParams ? `?${searchParams}` : ''
 }
 
 function updateMessage (data) {
