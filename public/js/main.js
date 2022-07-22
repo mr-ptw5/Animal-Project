@@ -11,13 +11,18 @@ function callData() {
             'Content-Type': 'application/json'
         }
     })
-        .then(res => res.json())
-        .then(data => {
+    .then(res=> res.json())
+    .then(res => console.log(res))
+        // .then(res => {
+            // console.log(res)
+            // return res.json()
+        // })
+        // .then(data => {
             // console.log(data)
             // emptyBirdList()
             // populateBirdList(data.list)
             // updateMessage(data)
-                })
+        // })
         .catch(err => {
             console.log(`error ${err}`)
         });
@@ -35,7 +40,7 @@ function getQueryParametersString() {
     return searchParams ? `?${searchParams}` : ''
 }
 
-function updateMessage (data) {
+function updateMessage(data) {
     const location = data.location
     const count = data.list.length
     document.querySelector('h1').textContent = `${count} birds in ${location}`
@@ -59,36 +64,36 @@ function populateBirdList(creatures) {
     })
 }
 
-function sendNote () {
+function sendNote() {
     const note = document.querySelector('section input').value
     fetch(url + '/addNote', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({note: note})
+        body: JSON.stringify({ note: note })
     })
         // .then(res => res.json())// res.json()) // parse response as JSON
         .then(response => response.json())
         .then(res => {
             console.log(res)
             window.location = res.redirect
-                })
+        })
         .catch(err => {
             console.log(`error ${err}`)
         });
 }
 
-function clearItems () {
+function clearItems() {
     fetch(url + '/clearItems', {
         method: 'DELETE',
     })
-    .then(res => {
-        console.log(res.redirect)
-        return res.json()
-    })
-    .then(res => {
-        window.location = res.redirect
-    })
-    .catch(err => console.log(err))
+        .then(res => {
+            console.log(res.redirect)
+            return res.json()
+        })
+        .then(res => {
+            window.location = res.redirect
+        })
+        .catch(err => console.log(err))
 }

@@ -26,10 +26,11 @@ app.use(express.json())
 
 
 app.get('/', (req, res) => {
-    getBirdData(req.query)
+    getBirdData()
     .then(data => {
         const creatures = tidyCreatureData(data)
         creatures.sort(sortByClade)
+        console.log('initial load:', creatures[0])
         res.render('index.ejs', {birds: creatures})
     })
     .catch(err => console.log(err))
@@ -39,12 +40,14 @@ app.get('/loginput', (req, res) => {
     res.sendFile(__dirname + '/loginput.html')
 })
 
-app.get('/api/birddata', (req, res) => {
+app.get('/api/birdData', (req, res) => {
     getBirdData(req.query)
     .then(data => {
         const creatures = tidyCreatureData(data)
         creatures.sort(sortByClade)
-        res.render('index.ejs', {birds: creatures})
+        console.log('on click:', creatures[0])
+        // res.render('index.ejs', {birds: creatures})
+        res.json(creatures)
     })
     .catch(err => console.log(err))
 })
@@ -68,19 +71,12 @@ app.listen(process.env.PORT || PORT, () => {
     console.log(`the server is running on port ${PORT}`)
 })
 
-
-function getBirdData(code) {
-    // return birdCollection.find({}).toArray()
-    const locationParameter = code.state ? {
-        "nations.subnations.subnationCode": code.state
+function getBirdData(query = {}) {
+    const locationParameter = query.state ? {
+        "nations.subnations.subnationCode": query.state
     }
     : {}
-    console.log("gonna get from mongodb now")
-    const ham = {"nations.subnations.subnationCode": "ME"}
-    let vr = "HI"
-    // console.log(code.state, "NE")
-    return birdCollection.find({'nations.subnations.subnationCode': vr}).toArray()
-    // return birdCollection.find(locationParameter).toArray()
+    return birdCollection.find(locationParameter).toArray()
 }
 
 
