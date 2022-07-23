@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
@@ -75,13 +75,15 @@
     <h1></h1>
     <ul>
     <% for (let i = 0; i < birds.length; i++) {%>
-        <li class="bird">
+        <li class="bird" id="<%=birds[i].id%>">
             <span><%= `${birds[i].commonName} ....... ${birds[i].usefulName}` %></span>
+            <input type="text" placeholder="Optional note">
+            <button>Add</button>
         </li>
      <% } %>
     </ul>
     <button>Clear all items in the database</button>
-    <script src="js/main.js"></script>
+    <script src="/js/main.js"></script>
 </body>
 
 </html>

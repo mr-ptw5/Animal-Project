@@ -1,31 +1,37 @@
 const url = '/api'
 document.querySelector('img').addEventListener('click', callData)
+const items = document.querySelectorAll('li button')
+items.forEach(button => {
+    button.addEventListener('click', saveNote)
+})
 // document.querySelector('section input + button').addEventListener('click', sendNote)
 // document.querySelector('ul + button').addEventListener('click', clearItems)
 
 function callData() {
-    const queryParams = getQueryParametersString()
-    fetch(url + '/birdData' + queryParams, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(res=> res.json())
-    .then(res => console.log(res))
-        // .then(res => {
-            // console.log(res)
-            // return res.json()
-        // })
-        // .then(data => {
-            // console.log(data)
-            // emptyBirdList()
-            // populateBirdList(data.list)
-            // updateMessage(data)
-        // })
-        .catch(err => {
-            console.log(`error ${err}`)
-        });
+    // const queryParams = getQueryParametersString()
+    // queryParams takes the form of ?state=NY for example
+    const state = document.querySelector('select').value
+    window.location.href = `${url}/birds?state=${state}`
+
+    // fetch(url + '/birdData' + queryParams, {
+    //     method: 'GET',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'state': queryParams
+    //     }
+    // })
+    // .then (res => console.log('testing the calldata thing', res))
+    // // .then(res=> res.json())
+    // // .then(res => console.log(res))
+    //     .catch(err => {
+    //         console.log(`error ${err}`)
+    //     });
+}
+
+function saveNote(e) {
+    const id = e.target.parentElement.id
+    const note = document.getElementById(id).value
+    console.log(id, note)
 }
 
 

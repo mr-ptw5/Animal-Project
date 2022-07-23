@@ -1,7 +1,8 @@
-const { response } = require('express')
 const express = require('express')
 const MongoClient = require('mongodb').MongoClient
 const app = express()
+app.use(express.static('public'))
+app.use(express.json())
 app.set('view-engine', 'ejs')
 require('dotenv').config()
 const PORT = 8000
@@ -20,8 +21,6 @@ MongoClient.connect(connectionStr)
 .catch (err => {
     console.log(`problem: ${err}`)
 })
-app.use(express.static('public'))
-app.use(express.json())
 
 
 
@@ -30,7 +29,7 @@ app.get('/', (req, res) => {
     .then(data => {
         const creatures = tidyCreatureData(data)
         creatures.sort(sortByClade)
-        console.log('initial load:', creatures[0])
+        console.log('initial pageload example data:', creatures[0])
         res.render('index.ejs', {birds: creatures})
     })
     .catch(err => console.log(err))
@@ -40,14 +39,14 @@ app.get('/loginput', (req, res) => {
     res.sendFile(__dirname + '/loginput.html')
 })
 
-app.get('/api/birdData', (req, res) => {
+app.get('/api/birds', (req, res) => {
     getBirdData(req.query)
     .then(data => {
         const creatures = tidyCreatureData(data)
         creatures.sort(sortByClade)
-        console.log('on click:', creatures[0])
-        // res.render('index.ejs', {birds: creatures})
-        res.json(creatures)
+        console.log('parameter selected, example data:', creatures[0])
+        res.render('index.ejs', {birds: creatures})
+        // res.json(creatures)
     })
     .catch(err => console.log(err))
 })
@@ -89,12 +88,13 @@ function tidyCreatureData(data) {
             order: creature.speciesGlobal.taxorder,
             family: creature.speciesGlobal.family,
             genus: creature.speciesGlobal.genus,
-            species: creature.scientificName.split(' ').slice(1).join(' ')
+            species: creature.scientificName.split(' ').slice(1).join(' '),
         }
         return {
             phylumAndClass: `${classification.phylum} ${classification.class}`,
             usefulName: `${classification.order} ${classification.family} ${classification.genus} ${classification.species}`,
-            commonName: classification.name
+            commonName: classification.name,
+            id: creature._id
         }
     })
     return creatures
