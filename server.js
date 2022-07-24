@@ -127,5 +127,9 @@ get list of birds for the filter criteria
 
 get data for a bird
     list of sightings
+    list of photos
+    
+login data
+
 
 */
